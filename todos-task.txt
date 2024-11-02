@@ -1,0 +1,66 @@
+import React, { useState, useEffect } from 'react'; 
+import axios from 'axios';
+
+// Định nghĩa kiểu cho dữ liệu
+type DataType = { [key: string]: any } | any[] | null;
+
+function App() {
+  const [data, setData] = useState<DataType>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('https://jsonplaceholder.typicode.com/posts'); // URL mẫu
+
+        console.log(response.data); // In dữ liệu ra console
+        setData(response.data); 
+      } catch (err: unknown) { // Định nghĩa kiểu cho err
+        console.error(err);
+        if (axios.isAxiosError(err)) {
+          setError(`An error occurred: ${err.message}`); // Lỗi từ axios
+        } else {
+          setError("An unexpected error occurred"); // Lỗi không xác định
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
+  return (
+    <div>
+      <h1>API Data Display</h1>
+      <div>
+        {Array.isArray(data) ? (
+          <ul>
+            {data.map((item: any, index: React.Key) => (
+              <li key={index}>
+                {JSON.stringify(item)}
+              </li>
+            ))}
+          </ul>
+        ) : data ? (
+          <ul>
+            {Object.entries(data).map(([key, value]) => (
+              <li key={key}>
+                {key}: {JSON.stringify(value)}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No data available</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;
